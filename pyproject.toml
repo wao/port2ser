@@ -11,9 +11,11 @@ loguru = "^0.5.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
+pytest-asyncio = "^0.15.1"
 
 [tool.poetry.scripts]
-port2ser = 'port2ser.console:run'
+ser2port = 'port2ser.console:ser2port'
+port2ser = 'port2ser.console:port2ser'
 
 
 [build-system]
