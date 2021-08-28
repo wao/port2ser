@@ -1,6 +1,7 @@
 import serial
 import asyncio
 import serial_asyncio
+from .serial_server import SerialServer
 
 class TcpServer:
     async def handle_echo(self, reader, writer):
@@ -54,7 +55,7 @@ class TcpClient:
         
 
 
-class SerialServer:
+class SerialServer2:
     def __init(self):
         self.tcp = None
 
@@ -77,9 +78,8 @@ class SerialServer:
         await asyncio.gather(self.read(), self.tcp.run())
 
 def ser2port():
-    print("hello world!")
     srv = SerialServer()
-    asyncio.run(srv.run())
+    asyncio.run(srv.connect("/dev/ttyUSB0"))
 
 async def srv():
         url = "/dev/ttyUSB1"
@@ -87,4 +87,5 @@ async def srv():
         writer.write(b"hello world!")
 
 def port2ser():
-    asyncio.run(srv())
+    srv = SerialServer()
+    asyncio.run(srv.connect("/dev/ttyUSB1"))
