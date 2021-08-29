@@ -48,11 +48,11 @@ def test_version():
 
 async def ser2port():
     srv = Ser2Port()
-    await srv.run("/dev/ttyUSB0")
+    await srv.run("/dev/ttyUSB0", 18888)
 
 async def port2ser():
     srv = Port2Ser()
-    await srv.run("/dev/ttyUSB1")
+    await srv.run("/dev/ttyUSB1", 28888)
 
 async def two_tcp_echo_client():
     await tcp_echo_client( "Hello world! New world!" )

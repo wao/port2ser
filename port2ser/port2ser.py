@@ -15,8 +15,9 @@ class TcpClosable:
             self.writer.close()
 
 class TcpServer(TcpClosable):
-    def __init__(self, serial):
+    def __init__(self, serial, port):
         super().__init__()
+        self.port = port
         self.serial = serial
 
     async def handle_echo(self, reader, writer):
@@ -47,7 +48,7 @@ class TcpServer(TcpClosable):
 
     async def run(self):
         server = await asyncio.start_server(
-            self.handle_echo, '127.0.0.1', 28888)
+            self.handle_echo, '127.0.0.1', self.port)
 
         addr = server.sockets[0].getsockname()
         logger.info(f'Port2ser Serving on {addr}')
@@ -61,18 +62,19 @@ class TcpServer(TcpClosable):
 
 
 class TcpClient(TcpClosable):
-    def __init__(self, serial_writer):
+    def __init__(self, serial_writer, port):
         super().__init__()
+        self.port = port
         self.serial_writer = serial_writer
 
     @staticmethod
-    async def connect(writer):
-        inst = TcpClient(writer)
+    async def connect(writer, port):
+        inst = TcpClient(writer, port)
         await inst.internal_connect()
         return inst
 
     async def internal_connect(self):
-        self.reader, self.writer = await asyncio.open_connection('127.0.0.1', 18888 )
+        self.reader, self.writer = await asyncio.open_connection('127.0.0.1', self.port )
 
     def write(self, data):
         self.writer.write(data)
@@ -91,7 +93,8 @@ class TcpClient(TcpClosable):
 
 
 class Ser2Port:
-    async def run(self, url):
+    async def run(self, url, port = 24800):
+        self.port = port
         self.serial = SerialServer(url, self)
         self.tcp_create_event = asyncio.Event()
         logger.info( "Ser2Port setup serial")
@@ -106,7 +109,7 @@ class Ser2Port:
 
     async def on_socket_connect(self):
         logger.info( "connecting TcpClient" )
-        self.tcp = await TcpClient.connect(self.serial)
+        self.tcp = await TcpClient.connect(self.serial, self.port)
         logger.info( "connected TcpClient" )
         self.tcp_create_event.set()
 
@@ -118,11 +121,12 @@ class Ser2Port:
         self.tcp.close()
 
 class Port2Ser:
-    async def run(self, url):
+    async def run(self, url, port = 24800):
+        self.port = port
         self.serial = SerialServer(url, self)
         logger.info( "Port2Ser setup serial")
         await self.serial.setup_serial()
-        self.tcp = TcpServer(self.serial)
+        self.tcp = TcpServer(self.serial, self.port)
         await asyncio.gather( self.serial.read_proc(), self.tcp.run() )
         logger.info( "run end" )
 
