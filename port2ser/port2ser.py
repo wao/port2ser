@@ -93,19 +93,22 @@ class TcpClient(TcpClosable):
 
 
 class Ser2Port:
+    def __init__(self):
+        self.tcp = None
+
     async def run(self, url, port = 24800):
         self.port = port
-        self.serial = SerialServer(url, self)
         self.tcp_create_event = asyncio.Event()
+        self.serial = SerialServer(url, self)
         logger.info( "Ser2Port setup serial")
         await self.serial.setup_serial()
         await asyncio.gather( self.serial.read_proc(), self.tcp_to_serial_proc() )
         logger.info( "run end" )
 
     async def tcp_to_serial_proc(self):
-        await self.tcp_create_event.wait()
-        await self.tcp.run()
-
+        while True:
+            await self.tcp_create_event.wait()
+            await self.tcp.run()
 
     async def on_socket_connect(self):
         logger.info( "connecting TcpClient" )
@@ -118,7 +121,9 @@ class Ser2Port:
         self.tcp.write(data)
 
     async def on_socket_disconnect(self):
-        self.tcp.close()
+        if self.tcp:
+            self.tcp.close()
+            self.tcp = None
 
 class Port2Ser:
     async def run(self, url, port = 24800):

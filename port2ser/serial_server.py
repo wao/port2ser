@@ -21,7 +21,7 @@ class SerialServer:
 
     def cmd_data(self, data):
         data_len = len(data)
-        logger.info("Send data to %s and len %d" % ( self.url, data_len ) )
+        logger.error("Send data to %s and len %d" % ( self.url, data_len ) )
         #logger.info(b"Data:" + data )
         self.writer.write( struct.pack( "BBBBB",  0x19, 0x74, Packet.CMD_DATA, data_len % 256, data_len // 256  ))
         self.writer.write(data)
@@ -37,7 +37,7 @@ class SerialServer:
 
 
     async def open_serial_port(self):
-        self.reader, self.writer = await serial_asyncio.open_serial_connection(url=self.url, baudrate=30000, bytesize=8, parity='N', stopbits=serial.STOPBITS_ONE, xonxoff=1, rtscts=0 )
+        self.reader, self.writer = await serial_asyncio.open_serial_connection(url=self.url, baudrate=3000000, bytesize=8, parity='N', stopbits=serial.STOPBITS_ONE, xonxoff=1, rtscts=0 )
         self.parser = Parser(self.reader) 
 
 
@@ -70,6 +70,7 @@ class SerialServer:
                 logger.info( "Recv pkt type 0x%x" % pkt.cmd )
 
                 if pkt.cmd == Packet.CMD_DATA:
+                    logger.error("Recv data len %d" % len(pkt.buf))
                     self.client.on_recv( pkt.buf )
                 elif pkt.cmd == Packet.CMD_CONNECT:
                     await self.client.on_socket_connect()
