@@ -163,6 +163,7 @@ class SerialServer:
         await self.connect_to_remote()
 
     async def read_proc(self):
+        cookie = -1
         try:
             while True:
                 #logger.info( "Wait  data from serial port " + self.url)
@@ -170,16 +171,16 @@ class SerialServer:
                 #logger.info( "Recv pkt type 0x%x" % pkt.cmd )
 
                 if pkt.cmd == Packet.CMD_DATA:
-                    self.recv_cnt += len(pkt.buf)
+                    self.recv_cnt += len(pkt.buf, cookie)
                     logger.error("Recv data total len %d" % self.recv_cnt)
                     self.client.on_recv( pkt.buf )
                 elif pkt.cmd == Packet.CMD_CONNECT:
-                    await self.client.on_socket_connect()
+                    cookie = await self.client.on_socket_connect()
                 elif pkt.cmd == Packet.CMD_DISCONNECT:
-                    await self.client.on_socket_disconnect() 
+                    await self.client.on_socket_disconnect(cookie) 
                 elif pkt.cmd == Packet.CMD_RESET:
                     self.send_cmd(Packet.CMD_RESET_OK)
-                    await self.client.on_socket_disconnect() 
+                    await self.client.on_socket_disconnect(cookie) 
                 elif pkt.cmd == Packet.CMD_RESET_OK:
                     # ingore it
                     pass

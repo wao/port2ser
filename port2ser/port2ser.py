@@ -139,15 +139,17 @@ class Ser2Port:
         self.tcp = await TcpClient.connect(self.serial, self.port)
         logger.info( "connected TcpClient" )
         self.tcp_create_event.set()
+        return self.tcp.instance_id
 
 
-    def on_recv(self, data):
+    def on_recv(self, data, cookie):
         self.tcp.write(data)
 
-    async def on_socket_disconnect(self):
+    async def on_socket_disconnect(self, cookie):
         if self.tcp:
-            self.tcp.close()
-            self.tcp = None
+            if self.tcp.instance_id == cookie:
+                self.tcp.close(cookie)
+                self.tcp = None
 
 class Port2Ser:
     async def run(self, url, port = 24800):
@@ -162,5 +164,5 @@ class Port2Ser:
     def on_recv(self, data):
         self.tcp.write(data)
 
-    async def on_socket_disconnect(self):
-        self.tcp.close()
+    async def on_socket_disconnect(self, cookie):
+        self.tcp.close(cookie)
