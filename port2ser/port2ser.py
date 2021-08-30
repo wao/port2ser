@@ -108,6 +108,7 @@ class Ser2Port:
     async def tcp_to_serial_proc(self):
         while True:
             await self.tcp_create_event.wait()
+            self.tcp_create_event.clear()
             await self.tcp.run()
 
     async def on_socket_connect(self):

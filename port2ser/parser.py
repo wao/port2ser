@@ -12,7 +12,7 @@ class Parser:
         await self.read_magic()
         cmd = await self.read_cmd()
         buf_len = await self.read_len()
-        logger.info( "Read buf len %d" % buf_len )
+        #logger.info( "Read buf len %d" % buf_len )
         if buf_len > 0:
             buf = await self.read_buf(buf_len)
         else:
@@ -76,4 +76,4 @@ class Parser:
             self.buf_off = 0
             self.buf_len = len(self.buf)
             #logger.info( b"read data from serail " + self.buf )
-            #logger.info( "Data len %d" % self.buf_len )
+            ##logger.info( "Data len %d" % self.buf_len )
