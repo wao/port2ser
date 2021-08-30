@@ -7,7 +7,7 @@ import serial
 import struct
 import traceback
 
-BAUDRATE=115200
+BAUDRATE=3000000
 
 class SerialServer:
 
