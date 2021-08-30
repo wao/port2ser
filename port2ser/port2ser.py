@@ -28,6 +28,7 @@ class TcpServer(TcpClosable):
             self.writer = writer
             self.reader = reader
             iid = self.instance_id
+            self.serial.cookie = iid
             self.instance_id += 1
 
             self.is_closed = False
@@ -161,7 +162,7 @@ class Port2Ser:
         await asyncio.gather( self.serial.read_proc(), self.tcp.run() )
         logger.info( "run end" )
 
-    def on_recv(self, data):
+    def on_recv(self, data, cookie):
         self.tcp.write(data)
 
     async def on_socket_disconnect(self, cookie):
