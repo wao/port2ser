@@ -25,12 +25,12 @@ class Parser:
             #wait magic 0
             magic_0 = await self.read_char()
             if magic_0 != Packet.MAGIC_0:
-                logger.info( "Expect MAGIC_0 but get get 0x%x" % magic_0 )
+                logger.error( "Expect MAGIC_0 but get get 0x%x" % magic_0 )
                 continue
 
             magic_1 = await self.read_char()
             if magic_1 != Packet.MAGIC_1:
-                logger.info( "Expect MAGIC_1 but get get 0x%x" % magic_1 )
+                logger.error( "Expect MAGIC_1 but get get 0x%x" % magic_1 )
                 continue
 
             return
