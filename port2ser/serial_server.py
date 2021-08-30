@@ -17,6 +17,7 @@ class SerialServer:
         self.url = url
         self.recv_cnt = 0
         self.send_cnt = 0
+        self.cookie = -1
 
     def send_cmd(self, cmd_code):
         logger.info("Send cmd %d to %s" % ( cmd_code, self.url ) )

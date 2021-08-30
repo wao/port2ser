@@ -75,5 +75,5 @@ class Parser:
             self.buf = await self.reader.read(128*1024)
             self.buf_off = 0
             self.buf_len = len(self.buf)
-            #logger.info( b"read data from serail " + self.buf )
+            logger.info( b"read data from serail " + self.buf )
             ##logger.info( "Data len %d" % self.buf_len )
