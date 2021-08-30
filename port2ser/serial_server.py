@@ -17,7 +17,7 @@ class SerialServer:
         self.url = url
 
     def send_cmd(self, cmd_code):
-        #logger.info("Send cmd %d to %s" % ( cmd_code, self.url ) )
+        logger.info("Send cmd %d to %s" % ( cmd_code, self.url ) )
         self.writer.write( struct.pack( "BBBBBBBBB",0x19, 0x19, 0x19, 0x19, 0x19, 0x74, cmd_code, 0x00, 0x00  ))
 
     def write(self, data):
@@ -60,7 +60,7 @@ class SerialServer:
 
 
     async def connect_to_remote(self):
-        #logger.info( "Connecting remote" )
+        logger.info( "Connecting remote" )
         self.send_cmd(Packet.CMD_RESET)        
         await self.flush()
         while True:
@@ -71,9 +71,9 @@ class SerialServer:
                 self.send_cmd(Packet.CMD_RESET_OK)
                 break
             else:
-                #logger.info("Wait connect remote, drop unknown packet: 0x%x" % pkt.cmd)
+                logger.info("Wait connect remote, drop unknown packet: 0x%x" % pkt.cmd)
 
-        #logger.info("Remote connected")
+        logger.info("Remote connected")
 
 
     async def setup_serial(self):
@@ -101,7 +101,7 @@ class SerialServer:
                     # ingore it
                     pass
                 else:
-                    #logger.info( "Uknown pkt type 0x%x" % pkt.cmd )
+                    logger.warning( "Uknown pkt type 0x%x" % pkt.cmd )
 
         except Exception as e:
             logger.error( "Got exception %s" % e )
@@ -135,7 +135,7 @@ class SerialServer:
 
 
     async def connect_to_remote(self):
-        #logger.info( "Connecting remote" )
+        logger.info( "Connecting remote" )
         self.send_cmd(Packet.CMD_RESET)        
         await self.flush()
         while True:
@@ -146,9 +146,9 @@ class SerialServer:
                 self.send_cmd(Packet.CMD_RESET_OK)
                 break
             else:
-                #logger.info("Wait connect remote, drop unknown packet: 0x%x" % pkt.cmd)
+                logger.info("Wait connect remote, drop unknown packet: 0x%x" % pkt.cmd)
 
-        #logger.info("Remote connected")
+        logger.info("Remote connected")
 
 
     async def setup_serial(self):
@@ -176,7 +176,7 @@ class SerialServer:
                     # ingore it
                     pass
                 else:
-                    #logger.info( "Uknown pkt type 0x%x" % pkt.cmd )
+                    logger.info( "Uknown pkt type 0x%x" % pkt.cmd )
 
         except Exception as e:
             logger.error( "Got exception %s" % e )
