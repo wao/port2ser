@@ -15,6 +15,8 @@ class SerialServer:
     def __init__(self, url, client):
         self.client = client
         self.url = url
+        self.recv_cnt = 0
+        self.send_cnt = 0
 
     def send_cmd(self, cmd_code):
         logger.info("Send cmd %d to %s" % ( cmd_code, self.url ) )
@@ -32,6 +34,9 @@ class SerialServer:
         if data_len == 0:
             logger.error("Skip empty data")
             return
+
+        self.send_cnt += data_len
+        logger.info( "Total send %d" % self.send_cnt )
 
         #logger.error("Send data to %s and len %d" % ( self.url, data_len ) )
         ##logger.info(b"Data:" + data )
@@ -88,7 +93,8 @@ class SerialServer:
                 #logger.info( "Recv pkt type 0x%x" % pkt.cmd )
 
                 if pkt.cmd == Packet.CMD_DATA:
-                    logger.error("Recv data len %d" % len(pkt.buf))
+                    self.recv_cnt += len(pkt.buf)
+                    logger.info("Recv data total %d" % self.recv_cnt) 
                     self.client.on_recv( pkt.buf )
                 elif pkt.cmd == Packet.CMD_CONNECT:
                     await self.client.on_socket_connect()
@@ -163,7 +169,8 @@ class SerialServer:
                 #logger.info( "Recv pkt type 0x%x" % pkt.cmd )
 
                 if pkt.cmd == Packet.CMD_DATA:
-                    logger.error("Recv data len %d" % len(pkt.buf))
+                    self.recv_cnt += len(pkt.buf)
+                    logger.error("Recv data total len %d" % self.recv_cnt)
                     self.client.on_recv( pkt.buf )
                 elif pkt.cmd == Packet.CMD_CONNECT:
                     await self.client.on_socket_connect()
