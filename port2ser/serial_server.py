@@ -33,7 +33,7 @@ class SerialServer:
             logger.error("Skip empty data")
             return
 
-        logger.error("Send data to %s and len %d" % ( self.url, data_len ) )
+        #logger.error("Send data to %s and len %d" % ( self.url, data_len ) )
         ##logger.info(b"Data:" + data )
         header = struct.pack( "BBBBBBBBB", 0x19, 0x19, 0x19, 0x19, 0x19, 0x74, Packet.CMD_DATA, data_len % 256, data_len // 256  )
         ret = struct.unpack( "BBBBBBBBB", header )
@@ -108,7 +108,7 @@ class SerialServer:
             traceback.print_tb(e.__traceback__)
 
 
-        logger.error("Send data to %s and len %d" % ( self.url, data_len ) )
+        #logger.error("Send data to %s and len %d" % ( self.url, data_len ) )
         ##logger.info(b"Data:" + data )
         header = struct.pack( "BBBBBBBBB", 0x19, 0x19, 0x19, 0x19, 0x19, 0x74, Packet.CMD_DATA, data_len % 256, data_len // 256  )
         ret = struct.unpack( "BBBBBBBBB", header )

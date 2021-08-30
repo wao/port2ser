@@ -37,7 +37,6 @@ class TcpServer(TcpClosable):
                     
                 self.serial.cmd_data(data)
                 await self.serial.flush()
-                logger.info( "data sended" )
 
             logger.info("Close the connection")
         except Exception as e:
@@ -81,9 +80,9 @@ class TcpClient(TcpClosable):
 
     async def run(self):
         while True:
-            logger.info( "Wait data from tcp client socket" )
+            #logger.info( "Wait data from tcp client socket" )
             data = await self.reader.read(64*1024)
-            logger.info("got data from tcp")
+            #logger.info("got data from tcp")
             if len(data) == 0:
                 self.serial_writer.cmd_disconnect()
                 break
