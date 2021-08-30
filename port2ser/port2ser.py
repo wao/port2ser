@@ -27,9 +27,9 @@ class TcpServer(TcpClosable):
             self.serial.cmd_connect()
             self.writer = writer
             self.reader = reader
+            self.instance_id += 1
             iid = self.instance_id
             self.serial.cookie = iid
-            self.instance_id += 1
 
             self.is_closed = False
 
