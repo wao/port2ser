@@ -9,7 +9,7 @@ class TcpClosable:
     def __init__(self):
         self.is_closed = False
 
-    def close(self):
+    def do_close(self):
         if not self.is_closed:
             self.is_closed = True
             self.writer.close()
@@ -19,6 +19,7 @@ class TcpServer(TcpClosable):
         super().__init__()
         self.port = port
         self.serial = serial
+        self.instance_id = 0
 
     async def handle_echo(self, reader, writer):
         try:
@@ -26,6 +27,8 @@ class TcpServer(TcpClosable):
             self.serial.cmd_connect()
             self.writer = writer
             self.reader = reader
+            iid = self.instance_id
+            self.instance_id += 1
 
             self.is_closed = False
 
@@ -43,7 +46,7 @@ class TcpServer(TcpClosable):
             logger.error("Got unknown exception %s" % e )
             traceback.print_tb(e.__traceback__)
 
-        self.close()
+        self.close(iid)
 
     async def run(self):
         server = await asyncio.start_server(
@@ -52,23 +55,37 @@ class TcpServer(TcpClosable):
         addr = server.sockets[0].getsockname()
         logger.info(f'Port2ser Serving on {addr}')
 
-        async with server:
-            await server.serve_forever()
+        try:
+            async with server:
+                await server.serve_forever()
+        except Exception as e:
+            logger.exception(e)
 
     def write(self, data):
         self.writer.write(data)
 
 
+    def close(self, iid):
+        if iid != self.instance_id: 
+            info.error( "Close with wrong id %d, should be %d" % ( iid, self.instance_id ) )
+        else:
+            super().do_close()
+
+tcp_instance_cnt = 0
 
 class TcpClient(TcpClosable):
-    def __init__(self, serial_writer, port):
+    def __init__(self, instance_id, serial_writer, port):
         super().__init__()
+        self.instance_id = instance_id
         self.port = port
         self.serial_writer = serial_writer
 
     @staticmethod
     async def connect(writer, port):
-        inst = TcpClient(writer, port)
+        global tcp_instance_cnt
+        iid = tcp_instance_cnt
+        tcp_instance_cnt += 1
+        inst = TcpClient(iid, writer, port)
         await inst.internal_connect()
         return inst
 
@@ -88,7 +105,13 @@ class TcpClient(TcpClosable):
                 break
             self.serial_writer.write(data)
 
-        self.close()
+        self.close(self.instance_id)
+
+    def close(self, iid):
+        if iid != self.instance_id: 
+            info.error( "Close with wrong id %d, should be %d" % ( iid, self.instance_id ) )
+        else:
+            super().do_close()
 
 
 class Ser2Port:
@@ -107,6 +130,7 @@ class Ser2Port:
     async def tcp_to_serial_proc(self):
         while True:
             await self.tcp_create_event.wait()
+            tcp_id = self.tcp.instance_id
             self.tcp_create_event.clear()
             await self.tcp.run()
 

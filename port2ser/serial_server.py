@@ -7,7 +7,7 @@ import serial
 import struct
 import traceback
 
-BAUDRATE=3000000
+BAUDRATE=115200
 
 class SerialServer:
 
@@ -60,6 +60,7 @@ class SerialServer:
 
 
     async def open_serial_port(self):
+        #self.reader, self.writer = await serial_asyncio.open_serial_connection(url=self.url, baudrate=BAUDRATE, bytesize=8, parity='N', stopbits=serial.STOPBITS_ONE, xonxoff=0, rtscts=1 )
         self.reader, self.writer = await serial_asyncio.open_serial_connection(url=self.url, baudrate=BAUDRATE, bytesize=8, parity='N', stopbits=serial.STOPBITS_ONE, xonxoff=1, rtscts=0 )
         self.parser = Parser(self.reader) 
 
