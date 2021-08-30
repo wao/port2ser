@@ -18,7 +18,7 @@ class SerialServer:
 
     def send_cmd(self, cmd_code):
         logger.info("Send cmd %d to %s" % ( cmd_code, self.url ) )
-        self.writer.write( struct.pack( "BBBBB",  0x19, 0x74, cmd_code, 0x00, 0x00  ))
+        self.writer.write( struct.pack( "BBBBBBBBB",0x19, 0x19, 0x19, 0x19, 0x19, 0x74, cmd_code, 0x00, 0x00  ))
 
     def write(self, data):
         self.cmd_data(data)
@@ -27,7 +27,7 @@ class SerialServer:
         data_len = len(data)
         logger.error("Send data to %s and len %d" % ( self.url, data_len ) )
         #logger.info(b"Data:" + data )
-        self.writer.write( struct.pack( "BBBBB",  0x19, 0x74, Packet.CMD_DATA, data_len % 256, data_len // 256  ))
+        self.writer.write( struct.pack( "BBBBBBBBB", 0x19, 0x19, 0x19, 0x19, 0x19, 0x74, Packet.CMD_DATA, data_len % 256, data_len // 256  ))
         self.writer.write(data)
 
     def cmd_disconnect(self):
