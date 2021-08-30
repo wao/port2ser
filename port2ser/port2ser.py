@@ -68,7 +68,7 @@ class TcpServer(TcpClosable):
 
     def close(self, iid):
         if iid != self.instance_id: 
-            info.error( "Close with wrong id %d, should be %d" % ( iid, self.instance_id ) )
+            logger.error( "Close with wrong id %d, should be %d" % ( iid, self.instance_id ) )
         else:
             super().do_close()
 
@@ -110,7 +110,7 @@ class TcpClient(TcpClosable):
 
     def close(self, iid):
         if iid != self.instance_id: 
-            info.error( "Close with wrong id %d, should be %d" % ( iid, self.instance_id ) )
+            logger.error( "Close with wrong id %d, should be %d" % ( iid, self.instance_id ) )
         else:
             super().do_close()
 
