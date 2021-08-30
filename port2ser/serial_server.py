@@ -7,8 +7,11 @@ import serial
 import struct
 import traceback
 
+BAUDRATE=115200
+
 class SerialServer:
-    BAUDRATE=115200
+
+
     def __init__(self, url, client):
         self.client = client
         self.url = url
