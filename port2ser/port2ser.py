@@ -70,21 +70,19 @@ class TcpServer:
 tcp_instance_cnt = 0
 
 class TcpClient:
-    def __init__(self, instance_id, serial_writer, port):
+    def __init__(self, link_id, serial_writer, port):
         super().__init__()
-        self.instance_id = instance_id
+        self.link_id = link_id
         self.port = port
         self.serial_writer = serial_writer
+        logger.info( "TcpClient: serial_writer %s" % str(self.serial_writer) )
 
     def start(self):
         self.task = asyncio.create_task(self.run())
 
     @staticmethod
-    async def connect(writer, port):
-        global tcp_instance_cnt
-        iid = tcp_instance_cnt
-        tcp_instance_cnt += 1
-        inst = TcpClient(iid, writer, port)
+    async def connect(link_id, writer, port):
+        inst = TcpClient(link_id, writer, port)
         await inst.internal_connect()
         return inst
 
@@ -96,13 +94,15 @@ class TcpClient:
 
     async def run(self):
         while True:
-            logger.info( "TcpClient: Wait data from tcp client socket" )
+            logger.info( "TcpClient[%d]: Wait data from tcp client socket" % self.link_id )
             data = await self.reader.read(64*1024)
-            logger.info("TcpClinet: got data from tcp %d" % len(data))
+            logger.info("TcpClinet[%d]: got data from tcp len %d" %( self.link_id, len(data)))
+
             if len(data) == 0:
                 self.serial_writer.cmd_disconnect()
                 break
-            self.serial_writer.write(data)
+
+            self.serial_writer.write(self.link_id, data)
         
     def close(self):
         self.writer.close()
@@ -134,7 +134,7 @@ class Ser2Port:
 
     async def on_socket_connect(self, link_id):
         logger.info( "connecting TcpClient for %d " % link_id )
-        self.tcps[link_id] = await TcpClient.connect(self.serial, self.port)
+        self.tcps[link_id] = await TcpClient.connect(link_id, self.serial, self.port)
         self.tcps[link_id].start()
         logger.info( "connected TcpClient for %d " % link_id )
         self.tcp_create_event.set()

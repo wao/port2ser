@@ -15,7 +15,7 @@ async def tcp_echo_client(message):
     print(f'Echo Client: Received: {data.decode()!r}')
 
     print('Echo Clinet: Close the connection')
-    assert message == data
+    assert message.encode() == data
     writer.close()
 
 class EchoServer:
