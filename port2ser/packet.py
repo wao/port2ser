@@ -9,6 +9,7 @@ class Packet:
     CMD_CONNECT = 0x05
     CMD_DISCONNECT = 0x06
 
-    def __init__(self, cmd, buf):
+    def __init__(self, cmd, link_id, buf):
         self.cmd = cmd
+        self.link_id = link_id
         self.buf = buf

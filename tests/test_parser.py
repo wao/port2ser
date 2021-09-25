@@ -32,7 +32,7 @@ async def test_readbuf():
     assert b"de" == await p.read_buf(2)
 
 def fake_reset_pkt():
-    datas = FakeReader([ [ 0x19 ], [0x74 , Packet.CMD_RESET, 0, 0 ], "a" ])
+    datas = FakeReader([ bytes([ 0x19 ]), bytes([0x74 , Packet.CMD_RESET, 0, 0, 0 ]), b"a" ])
     p = Parser(datas)
     return p
 
@@ -44,7 +44,7 @@ async def test_parse_cmd_packet():
     assert pkt.buf == None
 
 def fake_data_pkt():
-    datas = FakeReader([ [ 0x19 ], [0x74 , Packet.CMD_DATA, 5, 0 ], b"ab", b"cdefhij" ])
+    datas = FakeReader([ bytes([ 0x19 ]), bytes([0x74 , Packet.CMD_DATA, 2, 5, 0 ]), b"ab", b"cdefhij" ])
     p = Parser(datas)
     return p
 
@@ -53,10 +53,11 @@ async def test_parse_data_packet():
     p = fake_data_pkt()
     pkt = await p.parse()
     assert pkt.cmd == Packet.CMD_DATA
+    assert pkt.link_id == 2
     assert pkt.buf == b"abcde"
 
 def fake_data_pkt_with_wrong_magic():
-    datas = FakeReader([ b"wrong", [0x19], b"data", [ 0x19 ], [0x74 , Packet.CMD_DATA, 5, 0 ], b"ab", b"cdefhij" ])
+    datas = FakeReader([ b"wrong", bytes([0x19]), b"data", bytes([ 0x19 ]), bytes([0x74 , Packet.CMD_DATA, 1, 5, 0 ]), b"ab", b"cdefhij" ])
     p = Parser(datas)
     return p
 
@@ -65,4 +66,5 @@ async def test_parse_skip_none_magic():
     p = fake_data_pkt_with_wrong_magic()
     pkt = await p.parse()
     assert pkt.cmd == Packet.CMD_DATA
+    assert pkt.link_id == 1
     assert pkt.buf == b"abcde"

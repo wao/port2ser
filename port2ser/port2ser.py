@@ -5,49 +5,48 @@ from loguru import logger
 from .serial_server import SerialServer
 import traceback
 
-class TcpClosable:
-    def __init__(self):
-        self.is_closed = False
+class Connection:
+    def __init__(self, link_id, reader, writer):
+        self.link_id = link_id
+        self.reader = reader
+        self.writer = writer
 
-    def do_close(self):
-        if not self.is_closed:
-            self.is_closed = True
-            self.writer.close()
-
-class TcpServer(TcpClosable):
+class TcpServer:
     def __init__(self, serial, port):
         super().__init__()
         self.port = port
         self.serial = serial
         self.instance_id = 0
+        self.next_link_id = 1
+        self.links = {}
+
 
     async def handle_echo(self, reader, writer):
         try:
-            logger.info("Port2ser got tcp connection")
-            self.serial.cmd_connect()
-            self.writer = writer
-            self.reader = reader
-            self.instance_id += 1
-            iid = self.instance_id
-            self.serial.cookie = iid
+            local_link_id = self.next_link_id
+            self.next_link_id += 1
+            if self.next_link_id > 255:
+                self.next_link_id = 1
 
-            self.is_closed = False
+            self.links[local_link_id] = Connection(local_link_id, reader, writer)
+
+            logger.info("TCP Server got tcp connection for id %d " % local_link_id)
+            self.serial.cmd_connect(local_link_id)
 
             while True:
                 data = await reader.read(64*1024)
                 if len(data) == 0:
-                    self.serial.cmd_disconnect()
+                    self.serial.cmd_disconnect(local_link_id)
                     break
                     
-                self.serial.cmd_data(data)
+                self.serial.cmd_data(local_link_id, data)
                 await self.serial.flush()
 
-            logger.info("Close the connection")
+            logger.info("Close the connection for id %d " % local_link_id)
         except Exception as e:
             logger.error("Got unknown exception %s" % e )
             traceback.print_tb(e.__traceback__)
 
-        self.close(iid)
 
     async def run(self):
         server = await asyncio.start_server(
@@ -62,24 +61,23 @@ class TcpServer(TcpClosable):
         except Exception as e:
             logger.exception(e)
 
-    def write(self, data):
-        self.writer.write(data)
+    def write(self, link_id, data):
+        self.links[link_id].writer.write(data)
 
-
-    def close(self, iid):
-        if iid != self.instance_id: 
-            logger.error( "Close with wrong id %d, should be %d" % ( iid, self.instance_id ) )
-        else:
-            super().do_close()
+    def close(self, link_id):
+        self.links[link_id].writer.close()
 
 tcp_instance_cnt = 0
 
-class TcpClient(TcpClosable):
+class TcpClient:
     def __init__(self, instance_id, serial_writer, port):
         super().__init__()
         self.instance_id = instance_id
         self.port = port
         self.serial_writer = serial_writer
+
+    def start(self):
+        self.task = asyncio.create_task(self.run())
 
     @staticmethod
     async def connect(writer, port):
@@ -98,26 +96,21 @@ class TcpClient(TcpClosable):
 
     async def run(self):
         while True:
-            #logger.info( "Wait data from tcp client socket" )
+            logger.info( "TcpClient: Wait data from tcp client socket" )
             data = await self.reader.read(64*1024)
-            #logger.info("got data from tcp")
+            logger.info("TcpClinet: got data from tcp %d" % len(data))
             if len(data) == 0:
                 self.serial_writer.cmd_disconnect()
                 break
             self.serial_writer.write(data)
-
-        self.close(self.instance_id)
-
-    def close(self, iid):
-        if iid != self.instance_id: 
-            logger.error( "Close with wrong id %d, should be %d" % ( iid, self.instance_id ) )
-        else:
-            super().do_close()
+        
+    def close(self):
+        self.writer.close()
 
 
 class Ser2Port:
     def __init__(self):
-        self.tcp = None
+        self.tcps = {}
 
     async def run(self, url, port = 24800):
         self.port = port
@@ -129,28 +122,31 @@ class Ser2Port:
         logger.info( "run end" )
 
     async def tcp_to_serial_proc(self):
+        self.create_evt_task = asyncio.create_task(self.tcp_create_event.wait())
         while True:
-            await self.tcp_create_event.wait()
-            tcp_id = self.tcp.instance_id
-            self.tcp_create_event.clear()
-            await self.tcp.run()
+            logger.info( "wait for connect/disconnect event" )
+            await asyncio.wait([self.create_evt_task] + [ v.task for v in self.tcps.values()])
+            if self.tcp_create_event.is_set():
+                self.tcp_create_event.clear()
+                self.create_evt_task = asyncio.create_task(self.tcp_create_event.wait())
+            
 
-    async def on_socket_connect(self):
-        logger.info( "connecting TcpClient" )
-        self.tcp = await TcpClient.connect(self.serial, self.port)
-        logger.info( "connected TcpClient" )
+
+    async def on_socket_connect(self, link_id):
+        logger.info( "connecting TcpClient for %d " % link_id )
+        self.tcps[link_id] = await TcpClient.connect(self.serial, self.port)
+        self.tcps[link_id].start()
+        logger.info( "connected TcpClient for %d " % link_id )
         self.tcp_create_event.set()
-        return self.tcp.instance_id
 
 
-    def on_recv(self, data, cookie):
-        self.tcp.write(data)
+    def on_recv(self, link_id, data ):
+        self.tcps[link_id].write(data)
 
-    async def on_socket_disconnect(self, cookie):
-        if self.tcp:
-            if self.tcp.instance_id == cookie:
-                self.tcp.close(cookie)
-                self.tcp = None
+    async def on_socket_disconnect(self, link_id):
+        self.tcps[link_id].close()
+        del self.tcps[link_id]
+        self.tcp_create_event.set()
 
 class Port2Ser:
     async def run(self, url, port = 24800):
@@ -162,8 +158,8 @@ class Port2Ser:
         await asyncio.gather( self.serial.read_proc(), self.tcp.run() )
         logger.info( "run end" )
 
-    def on_recv(self, data, cookie):
-        self.tcp.write(data)
+    def on_recv(self, link_id, data):
+        self.tcp.write(link_id, data)
 
-    async def on_socket_disconnect(self, cookie):
-        self.tcp.close(cookie)
+    async def on_socket_disconnect(self, link_id):
+        self.tcp.close(link_id)

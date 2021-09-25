@@ -8,13 +8,14 @@ async def tcp_echo_client(message):
     reader, writer = await asyncio.open_connection(
         '127.0.0.1', 28888)
 
-    print(f'Send: {message!r}')
+    print(f'Echo Client: Send: {message!r}')
     writer.write(message.encode())
 
     data = await reader.read(100)
-    print(f'Received: {data.decode()!r}')
+    print(f'Echo Client: Received: {data.decode()!r}')
 
-    print('Close the connection')
+    print('Echo Clinet: Close the connection')
+    assert message == data
     writer.close()
 
 class EchoServer:
@@ -23,13 +24,16 @@ class EchoServer:
         message = data.decode()
         addr = writer.get_extra_info('peername')
 
-        print(f"Received {message!r} from {addr!r}")
+        print(f"Echo Sever: Received {message!r} from {addr!r}")
 
-        print(f"Send: {message!r}")
+        print(f"Echo Server: Send: {message!r}")
         writer.write(data)
         await writer.drain()
 
-        print("Close the connection")
+        await asyncio.sleep(2)
+
+        print("Echo Server: Close the connection")
+        reader.close()
         writer.close()
 
     async def start(self):
@@ -55,8 +59,12 @@ async def port2ser():
     await srv.run("/dev/ttyUSB1", 28888)
 
 async def two_tcp_echo_client():
+    await asyncio.sleep(2)
     await tcp_echo_client( "Hello world! New world!" )
     await tcp_echo_client( "Hello world! Old world!" )
+    await asyncio.sleep(2)
+    await tcp_echo_client( "Hello world! New world! 1" )
+    await tcp_echo_client( "Hello world! Old world! 2" )
 
 async def echo():
     await asyncio.sleep(2)

@@ -11,6 +11,7 @@ class Parser:
     async def parse(self):
         await self.read_magic()
         cmd = await self.read_cmd()
+        link_id = await self.read_link_id()
         buf_len = await self.read_len()
         #logger.info( "Read buf len %d" % buf_len )
         if buf_len > 0:
@@ -18,7 +19,7 @@ class Parser:
         else:
             buf = None
 
-        return Packet(cmd, buf)
+        return Packet(cmd, link_id, buf)
 
     async def read_magic(self):
         while True:
@@ -39,6 +40,9 @@ class Parser:
             return
 
     async def read_cmd(self):
+        return await self.read_char()
+
+    async def read_link_id(self):
         return await self.read_char()
 
     async def read_len(self):
