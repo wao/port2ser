@@ -94,9 +94,9 @@ class TcpClient:
 
     async def run(self):
         while True:
-            logger.info( "TcpClient[%d]: Wait data from tcp client socket" % self.link_id )
+            #logger.info( "TcpClient[%d]: Wait data from tcp client socket" % self.link_id )
             data = await self.reader.read(64*1024)
-            logger.info("TcpClinet[%d]: got data from tcp len %d" %( self.link_id, len(data)))
+            #logger.info("TcpClinet[%d]: got data from tcp len %d" %( self.link_id, len(data)))
 
             if len(data) == 0:
                 self.serial_writer.cmd_disconnect()
