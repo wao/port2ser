@@ -89,7 +89,7 @@ class SerialServer:
 
 
     async def open_serial_port(self):
-        self.reader, self.writer = await serial_asyncio.open_serial_connection(url=self.url, baudrate=BAUDRATE, bytesize=8, parity='N', stopbits=serial.STOPBITS_ONE, xonxoff=1, rtscts=0 )
+        self.reader, self.writer = await serial_asyncio.open_serial_connection(url=self.url, baudrate=BAUDRATE, bytesize=8, parity='N', stopbits=serial.STOPBITS_ONE, xonxoff=0, rtscts=True, dsrdtr=True )
         self.parser = Parser(self.reader) 
 
 
