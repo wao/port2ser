@@ -46,7 +46,8 @@ class TcpServer:
         except Exception as e:
             logger.error("Got unknown exception %s" % e )
             traceback.print_tb(e.__traceback__)
-
+        
+        #TODO: need to clean leaked linkid here
 
     async def run(self):
         server = await asyncio.start_server(
@@ -66,6 +67,10 @@ class TcpServer:
 
     def close(self, link_id):
         self.links[link_id].writer.close()
+
+    def close_all(self):
+        for link_id, link in self.links.items():
+            link.writer.close()
 
 tcp_instance_cnt = 0
 
@@ -148,6 +153,14 @@ class Ser2Port:
         del self.tcps[link_id]
         self.tcp_create_event.set()
 
+    async def on_socket_disconnect_all(self):
+        for conn_id, conn in self.tcps.items():
+            conn.close()
+
+        self.tcps.clear()
+        self.tcp_create_event.set()
+
+
 class Port2Ser:
     async def run(self, url, port = 24800):
         self.port = port
@@ -163,3 +176,6 @@ class Port2Ser:
 
     async def on_socket_disconnect(self, link_id):
         self.tcp.close(link_id)
+
+    async def on_socket_disconnect_all(self):
+        self.tcp.close_all()

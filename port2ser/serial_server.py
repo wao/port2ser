@@ -37,7 +37,7 @@ class SerialServer:
             return
 
         self.send_cnt += data_len
-        logger.info( "Total send %d" % self.send_cnt )
+        #logger.info( "Total send %d" % self.send_cnt )
 
         #logger.error("Send data to %s and len %d" % ( self.url, data_len ) )
         ##logger.info(b"Data:" + data )
@@ -65,7 +65,7 @@ class SerialServer:
 
                 if pkt.cmd == Packet.CMD_DATA:
                     self.recv_cnt += len(pkt.buf)
-                    logger.info("Recv data total %d" % self.recv_cnt) 
+                    #logger.info("Recv data total %d" % self.recv_cnt) 
                     self.client_mgr.on_recv( pkt.link_id, pkt.buf )
                 elif pkt.cmd == Packet.CMD_CONNECT:
                     await self.client_mgr.on_socket_connect(pkt.link_id)
