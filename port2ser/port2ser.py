@@ -66,7 +66,8 @@ class TcpServer:
         self.links[link_id].writer.write(data)
 
     def close(self, link_id):
-        self.links[link_id].writer.close()
+        if link_id in self.links:
+            self.links[link_id].writer.close()
 
     def close_all(self):
         for link_id, link in self.links.items():
@@ -149,9 +150,10 @@ class Ser2Port:
         self.tcps[link_id].write(data)
 
     async def on_socket_disconnect(self, link_id):
-        self.tcps[link_id].close()
-        del self.tcps[link_id]
-        self.tcp_create_event.set()
+        if link_id in self.tcps:
+            self.tcps[link_id].close()
+            del self.tcps[link_id]
+            self.tcp_create_event.set()
 
     async def on_socket_disconnect_all(self):
         for conn_id, conn in self.tcps.items():
