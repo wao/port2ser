@@ -105,7 +105,7 @@ class TcpClient:
             #logger.info("TcpClinet[%d]: got data from tcp len %d" %( self.link_id, len(data)))
 
             if len(data) == 0:
-                self.serial_writer.cmd_disconnect()
+                self.serial_writer.cmd_disconnect(self.link_id)
                 break
 
             self.serial_writer.write(self.link_id, data)
