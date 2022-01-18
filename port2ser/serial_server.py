@@ -26,29 +26,39 @@ class SerialServer:
     def write(self, link_id, data):
         self.cmd_data(link_id, data)
 
+    def internal_cmd_data_pkt(self, link_id, data_off, data_len, data):
+        #logger.error("Send data to %s and len %d" % ( self.url, data_len ) )
+        ##logger.info(b"Data:" + data )
+        logger.error("3Send data off %d, len %d" % (data_off, data_len))
+        #header = struct.pack( "BBBBBBBBBB", 0x19, 0x19, 0x19, 0x19, 0x19, 0x74, Packet.CMD_DATA, link_id, data_len % 256, data_len // 256  )
+        #ret = struct.unpack( "BBBBBBBBBB", header )
+        #if data_len != ret[8] + ret[9] * 256:
+        #    logger.error("wrong data length expect %d but 0x%x 0x%x" % ( data_len, ret[8], ret[9] ) )
+        #    raise Exception("Fatal error")
+
+        self.writer.write( struct.pack( "BBBBBBBBBB", 0x19, 0x19, 0x19, 0x19, 0x19, 0x74, Packet.CMD_DATA, link_id, data_len % 256, data_len // 256  ))
+        self.writer.write(data[data_off:data_off+data_len])
+        self.send_cnt += data_len
+
     def cmd_data(self, link_id, data):
         if data == None:
             logger.error("Skip None data")
             return
 
-        data_len = len(data)
-        if data_len == 0:
-            logger.error("Skip empty data")
-            return
 
-        self.send_cnt += data_len
+        data_len = len(data)
+        data_off = 0
+        logger.error("1Send data off %d, len %d" % (data_off, data_len))
+        while data_off < data_len:
+            send_len = data_len - data_off
+            if send_len > 256 * 256:
+                send_len = 256 * 256
+            logger.error("2Send data off %d, len %d" % (data_off, send_len))
+            self.internal_cmd_data_pkt(link_id, data_off, send_len, data)
+            data_off += send_len
+
         #logger.info( "Total send %d" % self.send_cnt )
 
-        #logger.error("Send data to %s and len %d" % ( self.url, data_len ) )
-        ##logger.info(b"Data:" + data )
-        header = struct.pack( "BBBBBBBBBB", 0x19, 0x19, 0x19, 0x19, 0x19, 0x74, Packet.CMD_DATA, link_id, data_len % 256, data_len // 256  )
-        ret = struct.unpack( "BBBBBBBBBB", header )
-        if data_len != ret[8] + ret[9] * 256:
-            logger.error("wrong data length expect %d but 0x%x 0x%x" % ( data_len, ret[8], ret[9] ) )
-            raise Exception("Fatal error")
-
-        self.writer.write( struct.pack( "BBBBBBBBBB", 0x19, 0x19, 0x19, 0x19, 0x19, 0x74, Packet.CMD_DATA, link_id, data_len % 256, data_len // 256  ))
-        self.writer.write(data)
 
     def cmd_disconnect(self, link_id):
         self.send_cmd(Packet.CMD_DISCONNECT, link_id)
