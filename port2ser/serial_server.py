@@ -29,7 +29,7 @@ class SerialServer:
     def internal_cmd_data_pkt(self, link_id, data_off, data_len, data):
         #logger.error("Send data to %s and len %d" % ( self.url, data_len ) )
         ##logger.info(b"Data:" + data )
-        logger.error("3Send data off %d, len %d" % (data_off, data_len))
+        #logger.error("3Send data off %d, len %d" % (data_off, data_len))
         #header = struct.pack( "BBBBBBBBBB", 0x19, 0x19, 0x19, 0x19, 0x19, 0x74, Packet.CMD_DATA, link_id, data_len % 256, data_len // 256  )
         #ret = struct.unpack( "BBBBBBBBBB", header )
         #if data_len != ret[8] + ret[9] * 256:
@@ -48,12 +48,12 @@ class SerialServer:
 
         data_len = len(data)
         data_off = 0
-        logger.error("1Send data off %d, len %d" % (data_off, data_len))
+        #logger.error("1Send data off %d, len %d" % (data_off, data_len))
         while data_off < data_len:
             send_len = data_len - data_off
             if send_len > 256 * 256:
                 send_len = 256 * 256
-            logger.error("2Send data off %d, len %d" % (data_off, send_len))
+            #logger.error("2Send data off %d, len %d" % (data_off, send_len))
             self.internal_cmd_data_pkt(link_id, data_off, send_len, data)
             data_off += send_len
 
