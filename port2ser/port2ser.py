@@ -23,10 +23,8 @@ class TcpServer:
 
     async def handle_echo(self, reader, writer):
         try:
-            local_link_id = self.next_link_id
+            local_link_id = self.next_link_id % 256
             self.next_link_id += 1
-            if self.next_link_id > 255:
-                self.next_link_id = 1
 
             self.links[local_link_id] = Connection(local_link_id, reader, writer)
 
