@@ -121,7 +121,7 @@ class Ser2Port:
         self.tcp_create_event = asyncio.Event()
         self.serial = SerialServer(url, self)
         logger.info( "Ser2Port setup serial")
-        await self.serial.setup_serial()
+        await self.serial.open_transport()
         await asyncio.gather( self.serial.read_proc(), self.tcp_to_serial_proc() )
         logger.info( "run end" )
 
@@ -166,7 +166,7 @@ class Port2Ser:
         self.port = port
         self.serial = SerialServer(url, self)
         logger.info( "Port2Ser setup serial")
-        await self.serial.setup_serial()
+        await self.serial.open_transport()
         self.tcp = TcpServer(self.serial, self.port)
         await asyncio.gather( self.serial.read_proc(), self.tcp.run() )
         logger.info( "run end" )

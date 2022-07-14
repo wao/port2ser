@@ -12,7 +12,7 @@ BAUDRATE=3000000
 
 class SerialServer(TransportServer):
     def __init__(self, url, client_mgr):
-        super.__init__(client_mgr)
+        super().__init__(client_mgr)
         self.url = url
 
     async def open_transport(self):
