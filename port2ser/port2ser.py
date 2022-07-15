@@ -16,7 +16,7 @@ class Ser2Port:
         serial = SerialServer(url, tcp_mgr.connection_manager)
         tcp_mgr.set_transport(serial.transport)
         logger.info( "server started" )
-        await asyncio.gather( serial.run() )
+        await serial.run()
         logger.info( "server end" )
 
 

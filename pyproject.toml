@@ -16,6 +16,8 @@ pytest-asyncio = "^0.15.1"
 [tool.poetry.scripts]
 ser2port = 'port2ser.console:ser2port'
 port2ser = 'port2ser.console:port2ser'
+btclt = 'port2ser.rfcomm:bt_clt'
+btsrv = 'port2ser.rfcomm:bt_srv'
 
 
 [build-system]
