@@ -26,7 +26,7 @@ class Transport:
         await self.writer.wait_closed()
 
     def send_cmd(self, cmd_code, link_id):
-        logger.info("[%d] Send cmd %d to %s" % ( link_id, cmd_code ) )
+        logger.info("[%d] Send cmd %d" % ( link_id, cmd_code ) )
         if self.writer == None:
             logger.error( "[%d] Tranport doesn't connected, skip send cmd %d" % ( link_id, cmd_code ) )
         else:
