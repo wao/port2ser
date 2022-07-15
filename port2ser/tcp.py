@@ -9,10 +9,12 @@ class Connection:
         self.writer = writer
 
 class ConnectionManager:
-    def __init__(self, transport, tcp_client):
-        self.transport = transport
+    def __init__(self, tcp_client):
         self.links = {}
         self.tcp_client = tcp_client
+
+    def set_transport(self, transport):
+        self.transport = transport
 
     async def handle_tcp_connection(self, link_id, tcp_reader, tcp_writer, accepted=True):
         try:
@@ -112,10 +114,13 @@ class TcpClient:
         return await asyncio.open_connection('127.0.0.1', self.port )
 
 class TcpManager:
-    def __init__(self, transport, port):
-        self.transport = transport
+    def __init__(self, port):
         self.port = port
-        self.connection_manager = ConnectionManager(transport, TcpClient(port))
+        self.connection_manager = ConnectionManager(TcpClient(self.port))
+
+    def set_transport(self, transport):
+        self.connection_manager.set_transport(transport)
+
 
     async def run_server(self):
         tcp_server = TcpServer(self.connection_manager, self.port)
