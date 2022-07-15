@@ -36,7 +36,7 @@ class ConnectionManager:
                 self.transport.cmd_data(link_id, data)
                 await self.transport.flush()
 
-                logger.info("Close the connection for id %d " % link_id)
+            logger.info("Close the connection for id %d " % link_id)
 
         except Exception as e:
             logger.error("Got unknown exception %s" % e )
