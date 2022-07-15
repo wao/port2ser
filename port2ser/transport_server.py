@@ -8,17 +8,29 @@ import struct
 import traceback
 
 BAUDRATE=3000000
-
-class TransportServer:
+class Transport:
     def __init__(self, client_mgr):
         self.client_mgr = client_mgr
         self.recv_cnt = 0
         self.send_cnt = 0
         self.cookie = -1
+        self.reader = None
+        self.writer = None 
+
+    async def on_connect(self, reader, writer):
+        self.reader = reader
+        self.writer = writer
+        self.parser = Parser(self.reader) 
+        await self.read_proc()
+        self.writer.close()
+        await self.writer.wait_closed()
 
     def send_cmd(self, cmd_code, link_id):
-        logger.info("[%d] Send cmd %d to %s" % ( link_id, cmd_code, self.url ) )
-        self.writer.write( struct.pack( "BBBBBBBBBB",0x19, 0x19, 0x19, 0x19, 0x19, 0x74, cmd_code, link_id, 0x00, 0x00  ))
+        logger.info("[%d] Send cmd %d to %s" % ( link_id, cmd_code ) )
+        if self.writer == None:
+            logger.error( "[%d] Tranport doesn't connected, skip send cmd %d" % ( link_id, cmd_code ) )
+        else:
+            self.writer.write( struct.pack( "BBBBBBBBBB",0x19, 0x19, 0x19, 0x19, 0x19, 0x74, cmd_code, link_id, 0x00, 0x00  ))
 
     def write(self, link_id, data):
         self.cmd_data(link_id, data)
@@ -40,6 +52,10 @@ class TransportServer:
     def cmd_data(self, link_id, data):
         if data == None:
             logger.error("Skip None data")
+            return
+
+        if self.writer == None:
+            logger.error( "[%d] Tranport doesn't connected, skip send data" % ( link_id ) )
             return
 
 
@@ -94,13 +110,9 @@ class TransportServer:
     async def flush(self):
         await self.writer.drain()
 
-
+"""
     async def connect_transport(self, reader, writer):
-        self.reader = reader
-        self.writer = writer
-        self.parser = Parser(self.reader) 
         await self.connect_to_remote()
-
 
     async def connect_to_remote(self):
         logger.info( "Connecting remote" )
@@ -117,4 +129,4 @@ class TransportServer:
                 logger.info("Wait connect remote, drop unknown packet: 0x%x" % pkt.cmd)
 
         logger.info("Remote connected")
-
+"""
