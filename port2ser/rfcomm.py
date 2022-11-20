@@ -10,10 +10,13 @@ class BtClient:
 
     async def run(self):
         serverMACAddress = '00:15:83:46:BA:C5'
+        print("run in BtClient")
         port = 13
         while True:
             s = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM)
-            reader, writer = await asyncio.open_connection(serverMACAddress, port, sock=s)
+            s.connect((serverMACAddress,port))
+            s.setblocking(False)
+            reader, writer = await asyncio.open_connection(sock=s)
             await self.transport.on_connect(reader, writer)
 
 
@@ -26,6 +29,7 @@ class BtServer:
 
 
     async def run(self):
+        print("run in BtServer")
         hostMACAddress = '00:15:83:46:BA:C5' # The MAC address of a Bluetooth adapter on the server. The server might have multiple Bluetooth adapters.
         port = 13 # 3 is an arbitrary choice. However, it must match the port used by the client.
         s = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM)
@@ -43,8 +47,9 @@ async def bt_run_srv(port = 24800):
     await bt.run()
 
 async def bt_run_clt(port = 24800):
+    print("run clt")
     tcp_mgr = TcpManager(port)
-    bt = BtServer(tcp_mgr.connection_manager)
+    bt = BtClient(tcp_mgr.connection_manager)
     tcp_mgr.set_transport(bt.transport)
     logger.info( "server started" )
     await asyncio.gather( bt.run(), tcp_mgr.run_server())
