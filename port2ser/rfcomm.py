@@ -19,6 +19,28 @@ class BtClient:
             reader, writer = await asyncio.open_connection(sock=s)
             await self.transport.on_connect(reader, writer)
 
+class TcpSerialServer:
+    def __init__(self, client_mgr):
+        self.transport = Transport(client_mgr)
+
+
+    async def handle_client(self, reader, writer):
+        await self.transport.on_connect(reader, writer)
+
+    async def run(self):
+        print("run in TcpSerialServer")
+>>      server = await asyncio.start_server(
+            self.handle_client, '10.0.0.132', 17771)
+
+        addr = server.sockets[0].getsockname()
+        logger.info(f'Port2ser Serving on {addr}')
+
+        try:
+            async with server:
+                await server.serve_forever()
+        except Exception as e:
+            logger.exception(e)
+
 
 class BtServer:
     def __init__(self, client_mgr):
@@ -38,13 +60,24 @@ class BtServer:
         async with server:
             await server.serve_forever()
 
+async def tcp_srv(port):
+    tcp_mgr = TcpManager(port)
+    tcp = TcpSerialServer(tcp_mgr.connection_manager)
+    tcp_mgr.set_transport(tcp.transport)
+    logger.info( "server started" )
+    await tcp.run()
 
-async def bt_run_srv(port = 24800):
+
+
+async def bt_srv(port):
     tcp_mgr = TcpManager(port)
     bt = BtServer(tcp_mgr.connection_manager)
     tcp_mgr.set_transport(bt.transport)
     logger.info( "server started" )
     await bt.run()
+
+async def bt_run_srv(port = 24800):
+    await asyncio.gather( bt_srv(port), tcp_srv(port) )
 
 async def bt_run_clt(port = 24800):
     print("run clt")

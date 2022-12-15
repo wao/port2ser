@@ -8,7 +8,8 @@ import serial
 import struct
 import traceback
 
-BAUDRATE=3000000
+#BAUDRATE=3000000
+BAUDRATE=230400
 
 class SerialServer:
     def __init__(self, url, client_mgr):
