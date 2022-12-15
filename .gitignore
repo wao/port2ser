@@ -2,3 +2,4 @@
 __pycache__
 gaHandleInfo.txt
 pytestdebug.log
+*.lock

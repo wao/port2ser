@@ -18,5 +18,6 @@ class SerialServer:
 
     async def run(self):
         while True:
-            reader, writer = await serial_asyncio.open_serial_connection(url=self.url, baudrate=BAUDRATE, bytesize=8, parity='N', stopbits=serial.STOPBITS_ONE, xonxoff=0, rtscts=True, dsrdtr=True )
+            #reader, writer = await serial_asyncio.open_serial_connection(url=self.url, baudrate=BAUDRATE, bytesize=8, parity='N', stopbits=serial.STOPBITS_ONE, xonxoff=0, rtscts=True, dsrdtr=True )
+            reader, writer = await serial_asyncio.open_serial_connection(url=self.url, baudrate=BAUDRATE, bytesize=8, parity='N', stopbits=serial.STOPBITS_ONE, xonxoff=0, rtscts=False, dsrdtr=False )
             await self.transport.on_connect(reader, writer)
