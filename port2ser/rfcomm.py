@@ -29,7 +29,7 @@ class TcpSerialServer:
 
     async def run(self):
         print("run in TcpSerialServer")
->>      server = await asyncio.start_server(
+        server = await asyncio.start_server(
             self.handle_client, '10.0.0.132', 17771)
 
         addr = server.sockets[0].getsockname()
@@ -60,7 +60,7 @@ class BtServer:
         async with server:
             await server.serve_forever()
 
-async def tcp_srv(port):
+async def tcp_srv_proc(port):
     tcp_mgr = TcpManager(port)
     tcp = TcpSerialServer(tcp_mgr.connection_manager)
     tcp_mgr.set_transport(tcp.transport)
@@ -69,7 +69,7 @@ async def tcp_srv(port):
 
 
 
-async def bt_srv(port):
+async def bt_srv_proc(port):
     tcp_mgr = TcpManager(port)
     bt = BtServer(tcp_mgr.connection_manager)
     tcp_mgr.set_transport(bt.transport)
@@ -77,7 +77,7 @@ async def bt_srv(port):
     await bt.run()
 
 async def bt_run_srv(port = 24800):
-    await asyncio.gather( bt_srv(port), tcp_srv(port) )
+    await asyncio.gather( bt_srv_proc(port), tcp_srv_proc(port) )
 
 async def bt_run_clt(port = 24800):
     print("run clt")

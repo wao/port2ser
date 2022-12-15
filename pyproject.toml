@@ -5,13 +5,13 @@ description = ""
 authors = ["Chen Yang <yangchen@thinkmore.info>"]
 
 [tool.poetry.dependencies]
-python = "^3.8"
-pyserial-asyncio = "^0.5"
-loguru = "^0.5.3"
+python = ">=3.8"
+pyserial-asyncio = ">=0.5"
+loguru = ">=0.5.3"
 
 [tool.poetry.dev-dependencies]
-pytest = "^5.2"
-pytest-asyncio = "^0.15.1"
+pytest = ">=5.2"
+pytest-asyncio = ">=0.15.1"
 
 [tool.poetry.scripts]
 ser2port = 'port2ser.console:ser2port'
