@@ -12,6 +12,7 @@ class ConnectionManager:
     def __init__(self, tcp_client):
         self.links = {}
         self.tcp_client = tcp_client
+        self.pending = {}
 
     def set_transport(self, transport):
         self.transport = transport
@@ -27,14 +28,22 @@ class ConnectionManager:
                 logger.info("TCP Server got tcp connection for id %d " % link_id)
                 self.transport.cmd_connect(link_id)
 
+            if link_id in self.pending:
+                for data in self.pending[link_id]:
+                    logger.info("Write pending %d data for %d" %(len(data), link_id))
+                    tcp_writer.write(data)
+                del self.pending[link_id]
+
             while True:
                 data = await tcp_reader.read(64*1024)
+                logger.info("read tcp data %d bytes for %d" %( len(data), link_id ) )
                 if len(data) == 0:
                     self.transport.cmd_disconnect(link_id)
                     break
                     
-                self.transport.cmd_data(link_id, data)
-                await self.transport.flush()
+                if len(data):
+                    self.transport.cmd_data(link_id, data)
+                    await self.transport.flush()
 
             logger.info("Close the connection for id %d " % link_id)
 
@@ -46,7 +55,15 @@ class ConnectionManager:
 
         
     def write(self, link_id, data):
-        self.links[link_id].writer.write(data)
+        logger.info( "write %d bytes data to %d setup: %d"  % (len(data), link_id, link_id in self.links) )
+        if link_id in self.links:
+            self.links[link_id].writer.write(data)
+        else:
+            #logger.info("pending data for %d" % link_id)
+            if not link_id in self.pending:
+                self.pending[link_id] = []
+
+            self.pending[link_id].append(data)
 
     async def close(self, link_id):
         if link_id in self.links:

@@ -33,7 +33,7 @@ class TcpSerialServer:
             self.handle_client, '10.0.0.132', 17771)
 
         addr = server.sockets[0].getsockname()
-        logger.info(f'Port2ser Serving on {addr}')
+        logger.info(f'TCP server Serving on {addr}')
 
         try:
             async with server:
@@ -64,7 +64,7 @@ async def tcp_srv_proc(port):
     tcp_mgr = TcpManager(port)
     tcp = TcpSerialServer(tcp_mgr.connection_manager)
     tcp_mgr.set_transport(tcp.transport)
-    logger.info( "server started" )
+    logger.info( "tcp server started" )
     await tcp.run()
 
 
@@ -73,7 +73,7 @@ async def bt_srv_proc(port):
     tcp_mgr = TcpManager(port)
     bt = BtServer(tcp_mgr.connection_manager)
     tcp_mgr.set_transport(bt.transport)
-    logger.info( "server started" )
+    logger.info( "bt server started" )
     await bt.run()
 
 async def bt_run_srv(port = 24800):
