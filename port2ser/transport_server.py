@@ -26,7 +26,7 @@ class Transport:
         await self.writer.wait_closed()
 
     def send_cmd(self, cmd_code, link_id):
-        logger.info("[%d] Send cmd %d" % ( link_id, cmd_code ) )
+        #logger.info("[%d] Send cmd %d" % ( link_id, cmd_code ) )
         if self.writer == None:
             logger.error( "[%d] Tranport doesn't connected, skip send cmd %d" % ( link_id, cmd_code ) )
         else:
@@ -88,7 +88,7 @@ class Transport:
 
                 if pkt.cmd == Packet.CMD_DATA:
                     self.recv_cnt += len(pkt.buf)
-                    logger.info("Recv data total %d" % self.recv_cnt) 
+                    #logger.info("Recv data total %d" % self.recv_cnt) 
                     self.client_mgr.on_recv( pkt.link_id, pkt.buf )
                 elif pkt.cmd == Packet.CMD_CONNECT:
                     await self.client_mgr.on_socket_connect(pkt.link_id)

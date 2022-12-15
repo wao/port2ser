@@ -30,13 +30,13 @@ class ConnectionManager:
 
             if link_id in self.pending:
                 for data in self.pending[link_id]:
-                    logger.info("Write pending %d data for %d" %(len(data), link_id))
+                    #logger.info("Write pending %d data for %d" %(len(data), link_id))
                     tcp_writer.write(data)
                 del self.pending[link_id]
 
             while True:
                 data = await tcp_reader.read(64*1024)
-                logger.info("read tcp data %d bytes for %d" %( len(data), link_id ) )
+                #logger.info("read tcp data %d bytes for %d" %( len(data), link_id ) )
                 if len(data) == 0:
                     self.transport.cmd_disconnect(link_id)
                     break
@@ -55,7 +55,7 @@ class ConnectionManager:
 
         
     def write(self, link_id, data):
-        logger.info( "write %d bytes data to %d setup: %d"  % (len(data), link_id, link_id in self.links) )
+        #logger.info( "write %d bytes data to %d setup: %d"  % (len(data), link_id, link_id in self.links) )
         if link_id in self.links:
             self.links[link_id].writer.write(data)
         else:
