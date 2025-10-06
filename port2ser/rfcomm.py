@@ -25,6 +25,7 @@ class TcpSerialServer:
 
 
     async def handle_client(self, reader, writer):
+        print("Got new tcp connect as transport")
         await self.transport.on_connect(reader, writer)
 
     async def run(self):

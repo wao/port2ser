@@ -6,6 +6,7 @@ import serial_asyncio
 import serial
 import struct
 import traceback
+import base64
 
 BAUDRATE=3000000
 class Transport:
@@ -45,7 +46,7 @@ class Transport:
         #    logger.error("wrong data length expect %d but 0x%x 0x%x" % ( data_len, ret[8], ret[9] ) )
         #    raise Exception("Fatal error")
 
-        self.writer.write( struct.pack( "BBBBBBBBBB", 0x19, 0x19, 0x19, 0x19, 0x19, 0x74, Packet.CMD_DATA, link_id, data_len % 256, data_len // 256  ))
+        self.writer.write( struct.pack( "BBBBBBBBBB", 0x19, 0x19, 0x19, 0x19, 0x19, 0x74, Packet.CMD_BASE64, link_id, data_len % 256, data_len // 256  ))
         self.writer.write(data[data_off:data_off+data_len])
         self.send_cnt += data_len
 
@@ -58,6 +59,7 @@ class Transport:
             logger.error( "[%d] Tranport doesn't connected, skip send data" % ( link_id ) )
             return
 
+        data = base64.b64encode(data)
 
         data_len = len(data)
         data_off = 0
@@ -90,6 +92,10 @@ class Transport:
                     self.recv_cnt += len(pkt.buf)
                     #logger.info("Recv data total %d" % self.recv_cnt) 
                     self.client_mgr.on_recv( pkt.link_id, pkt.buf )
+                if pkt.cmd == Packet.CMD_BASE64:
+                    self.recv_cnt += len(pkt.buf)
+                    #logger.info("Recv data total %d" % self.recv_cnt) 
+                    self.client_mgr.on_recv( pkt.link_id, base64.b64decode(pkt.buf) )
                 elif pkt.cmd == Packet.CMD_CONNECT:
                     await self.client_mgr.on_socket_connect(pkt.link_id)
                 elif pkt.cmd == Packet.CMD_DISCONNECT:
