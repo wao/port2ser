@@ -62,7 +62,7 @@ async def two_tcp_echo_client():
     await asyncio.sleep(2)
     await tcp_echo_client( "Hello world! New world!" )
     await tcp_echo_client( "Hello world! Old world!" )
-    await asyncio.sleep(2)
+    #  await asyncio.sleep(2)
     await tcp_echo_client( "Hello world! New world! 1" )
     await tcp_echo_client( "Hello world! Old world! 2" )
 

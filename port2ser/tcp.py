@@ -69,6 +69,8 @@ class ConnectionManager:
         if link_id in self.links:
             self.links[link_id].writer.close()
             await self.links[link_id].writer.wait_closed()
+
+        if link_id in self.links:
             del self.links[link_id]
 
 

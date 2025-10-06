@@ -30,7 +30,7 @@ class TcpSerialServer:
     async def run(self):
         print("run in TcpSerialServer")
         server = await asyncio.start_server(
-            self.handle_client, '10.0.0.132', 17771)
+            self.handle_client, '192.168.1.5', 17771)
 
         addr = server.sockets[0].getsockname()
         logger.info(f'TCP server Serving on {addr}')

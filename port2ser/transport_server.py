@@ -104,8 +104,8 @@ class Transport:
                     logger.warning( "Uknown pkt type 0x%x" % pkt.cmd )
 
         except Exception as e:
-            logger.error( "Got exception %s" % e )
-            traceback.print_tb(e.__traceback__)
+            logger.exception( "Got exception %s" % e )
+            #  traceback.print_tb(e.__traceback__)
 
     async def flush(self):
         await self.writer.drain()

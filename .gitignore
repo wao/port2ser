@@ -3,3 +3,5 @@ __pycache__
 gaHandleInfo.txt
 pytestdebug.log
 *.lock
+dist
+.tool-versions
