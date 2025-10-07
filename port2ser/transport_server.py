@@ -84,9 +84,9 @@ class Transport:
     async def read_proc(self):
         try:
             while True:
-                #logger.info( "Wait  data from serial port " + self.url)
+                logger.info( "Wait  data from serial port ")
                 pkt = await self.parser.parse()
-                #logger.info( "Recv pkt type 0x%x" % pkt.cmd )
+                logger.info( "Recv pkt type 0x%x" % pkt.cmd )
 
                 if pkt.cmd == Packet.CMD_DATA:
                     self.recv_cnt += len(pkt.buf)
