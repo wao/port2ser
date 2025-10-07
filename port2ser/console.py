@@ -14,8 +14,12 @@ def ser2port():
 
 def port2ser():
     url = "/dev/ttyUSB0"
+    port = 24800
     if len(sys.argv) > 1:
         url = sys.argv[1]
 
+    if len(sys.argv) > 2:
+        port = int(sys.argv[2])
+
     srv = Port2Ser()
-    asyncio.run(srv.run(url))
+    asyncio.run(srv.run(url, port))
